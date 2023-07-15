@@ -42,3 +42,7 @@ here is a 1-channel mini version of the device :
 ![](https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/Smart%20Home/1ch%20board%201.png)
 ![](https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/Smart%20Home/1ch%20board%202.png)
 
+# New version !!!
+Here is a little teaser, be advised for the newer version:
+![](https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/Smart%20Home/board%20version2.png)
+
