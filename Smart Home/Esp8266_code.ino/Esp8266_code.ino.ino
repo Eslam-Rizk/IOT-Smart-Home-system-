@@ -19,39 +19,15 @@ WiFiServer server(80);
 // Variable to store the HTTP request
 String header;
 
-// Current time
-unsigned long currentTime = millis();
-// Previous time
-unsigned long previousTime = 0;
-// Define timeout time in milliseconds (example: 2000ms = 2s)
-const long timeoutTime = 2000;
-
 IPAddress ip( xx , xx , xx , xx );                      //enter static ip  here
 IPAddress gateway( xx , xx , xx , xx );                    //enter static ip gateway here
 IPAddress subnet(255, 255, 255, 0);
 IPAddress dns(8, 8, 8, 8);
 IPAddress IP_Remote2(192, 168, 1, 12);                  //esp No. 2
-Ticker checkconn; Ticker checkingConn;                  // ticker timers
 
-int st_found = 1, conn_not = 1 , count = 0, apCount = 0, intvalue = 0, apORst = 6, stidrom = 7, stpwrom = 8, newap = 9, apidrom = 17, appwrom = 18, add0 = 0, add1 = 1, add2 = 2, add3 = 3, add4 = 4, val0, val1, val2, val3, val4, stidsize, stpwsize, apidsize, appwsize;
-String stssid;
-String stpassword;
-String apssid;
-String appassword;
-unsigned long time_now = 0, notConnTime = 0;
-bool notConn_ap = false;
+int add0 = 0, add1 = 1, add2 = 2, val0, val1, val2;     //variables to store pins states to eeprom
 
-void milli_delay(int period) {                         //delay function
-  time_now = millis();
-  while (millis() < time_now + period) {
-    //delay=period
-  }
-}
-
-//int add0=0,add1=1,add2=2,add3=3,add4=4;
-//station ssid EEPROM(21:40),station PW EEPROM(41:60),access point ssid EEPROM(61:80),acess point PW EEPROM(81:100)//add0=0,add1=1,add2=2,add3=3,add4=4,add5=5,add10=10,add12=12,add16=16
-void setup()
-{
+void setup(){
   Serial.begin(115200);             //start seial comm. at baud rate 115200
   pinMode(4, OUTPUT);                // set pin 4 as ouput
   digitalWrite(4, LOW);               //clear pin 4
@@ -75,64 +51,17 @@ void setup()
   digitalWrite(5, val1);
   digitalWrite(10, val2);
 
-  if (EEPROM.read(121) == '1') {                                 //check for new ip address
-    Serial.print("the new ip is ");
-    IPAddress ipaddress;
-    String newip = "";
-    for (int i = 0; i < EEPROM.read(122); i++) {
-      newip += char(EEPROM.read(123 + i));
-    }
-    int intnewip = newip.toInt();
-    if (ipaddress.fromString(newip)) {
-      ip = ipaddress;
-      Serial.println(ip);
-    }
-  }
-  else {
-    IPAddress ip(192, 168, 1, 11);                             //default ip iddress
-  }
-
-  if (EEPROM.read(apORst) == '1') {                              //check if station mode is chosen
-    stidsize = EEPROM.read(stidrom);                             //read st ssid size
-    stpwsize = EEPROM.read(stpwrom);                             //read st pw size
-    //create new st ssid char array & read its content from EEPROM
-    for (int i = 0; i <= stidsize - 1; i++) {
-      stssid += char(EEPROM.read(21 + i));
-    }
-    //String stpassword;                                         //create new st pw char array & read its content from EEPROM
-    for (int i = 0; i <= stpwsize - 1; i++) {
-      stpassword += char(EEPROM.read(41 + i));
-    }
-    WiFi.mode(WIFI_STA);                                           //begin station mode
-    Serial.println(); Serial.print("connecting to "); Serial.println(stssid);
-    WiFi.config(ip, gateway, subnet);
-    WiFi.begin(stssid, stpassword);
-  }
-
-  else {
-    if (EEPROM.read(newap) == '1') {                                 //check if new AP is entered
-      apidsize = int(EEPROM.read(apidrom));                           //read AP ssid size
-      appwsize = int(EEPROM.read(appwrom));                           //read AP pw size
-      //create new AP ssid char array & read its content from EEPROM
-      for (int i = 0; i <= apidsize - 1; i++) {
-        apssid += char(EEPROM.read(61 + i));
-      }
-      //create new AP pw char array & read its content for EEPROM
-      for (int i = 0; i <= appwsize - 1; i++) {
-        appassword += char(EEPROM.read(81 + i));
-      }
-      Serial.println(); Serial.print("establishing new "); Serial.print(apssid);
-      WiFi.mode(WIFI_AP);                                        //begin AP mode
-      WiFi.config(ip, gateway, subnet);
-      Serial.println(WiFi.softAP(apssid, appassword, 1, 0, 5) ? " Ready" : " Failed!");
-    }
-    else {                                                       //set default AP ssid and pw
-      Serial.println(); Serial.print("establishing default "); Serial.println(ssid);
-      WiFi.mode(WIFI_AP);
-      WiFi.config(ip, gateway, subnet);
-      Serial.print(WiFi.softAP(ssid, password, 1, 0, 5) ? " Ready" : " Failed!");
-      delay(500);
-    }
+  WiFi.mode(WIFI_STA);                                           //begin station mode
+  Serial.println(); Serial.print("connecting to "); Serial.println(ssid);
+  WiFi.config(ip, gateway, subnet);
+  WiFi.begin(ssid, password);
+  
+  while (WiFi.status() != WL_CONNECTED ) {
+    Serial.println(".");
+    digitalWrite(13, HIGH);
+    delay(100);
+    digitalWrite(13, LOW);
+    delay(400);
   }
 
   Udp.begin(localUdpPort);                                   //start udp protocol
@@ -142,55 +71,6 @@ void setup()
 }
 
 void loop() {
-  if (notConn_ap) {                                        //if not connected to wifi yet, start counter
-    if (millis() >= notConnTime + 1000) {
-      apCount++;
-      notConnTime = millis();
-    }
-  }
-
-  if (EEPROM.read(apORst) == '1' && WiFi.status() != WL_CONNECTED && conn_not == 1) {       //if in station mode & not connected to wifi & connection variable =1, start counter
-    while (WiFi.status() != WL_CONNECTED ) {
-      Serial.println(".");
-      digitalWrite(13, HIGH);
-      delay(100);
-      digitalWrite(13, LOW);
-      delay(400);
-      count++;
-      if (count >= 120) {                                                                 //if counter exceeds 60 secs, start access point mode
-        digitalWrite(13, HIGH);
-        delay(500);
-        digitalWrite(13, LOW);
-        notConn_ap = true;
-        WiFi.mode(WIFI_AP);
-        WiFi.config(ip, gateway, subnet);
-        Serial.print(WiFi.softAP(ssid, password, 1, 0, 5) ? "AP Ready.. station not " : "AP Failed!.. station not");
-        conn_not = 0;
-        count = 0;
-      }
-    }
-    if (WiFi.status() == WL_CONNECTED) {                                       // if connected to wifi, beep the buzzer and print connected to serial port
-      digitalWrite(13, HIGH);
-      delay(500);
-      digitalWrite(13, LOW);
-      count = 0;
-      Serial.println("connected");
-    }
-  }
-
-  if (digitalRead(0) == 0) {                         //hard reset
-    int buttondelay = millis();
-    while (digitalRead(0) == 0) {
-      int buttondelay2 = millis();
-      if (buttondelay2 == buttondelay + 1500) {
-        Serial.println("Back to defaults... ");
-        EEPROM.write(apORst, '0');                     //set access point after reboot
-        EEPROM.write(newap, '0');                      //set the default ssid and password
-        EEPROM.write(121, '0');                        //set the default IP address
-        EEPROM.commit();
-      }
-    }
-  }
 
   WiFiClient client = server.available();                             // Listen for incoming clients on web server
 
@@ -344,6 +224,7 @@ void loop() {
     Serial.println("Client disconnected.");
     Serial.println("");
   }
+
   int packetSize = Udp.parsePacket();                     //receiving data through udp
   if (packetSize)
   {
@@ -356,89 +237,10 @@ void loop() {
     }
     Serial.printf("UDP packet contents: %s\n", incomingPacket);                 //print the content of the received packet
 
-    if (incomingPacket[0] == 'a' && incomingPacket[1] == 'l' && incomingPacket[2] == 't' ) {   // changing mode(ap pr st) or changing ssis & pw or changing IP address
-      if (incomingPacket[3] == 'a' && incomingPacket[4] == 'p') {                                 //changing to a new access point
-        Udp.beginPacket(Udp.remoteIP(), 4210);                              // send back a reply, to the IP address and port we got the packet from
-        Udp.write("Setting new Access point...");
-        Udp.endPacket();
-        delay(100);
-        packetSize -= 5;
-        int i = 0, j = 0;
-        for (i = 0; i < packetSize; i++) {
-          if (incomingPacket[i + 5] == '&' && incomingPacket[i + 6] == '&' && incomingPacket[i + 7] == '&') break;      //break between ssid and pw
-          EEPROM.write(61 + i, incomingPacket[i + 5]);                                                   //(i+5)>> 5 is the NO. of a,l,t,a,p
-          EEPROM.commit();
-          Serial.print(char(EEPROM.read(61 + i)));
-        }
-        for (j = 0; j < packetSize - i - 3; j++) {
-          EEPROM.write(81 + j, incomingPacket[j + 5 + i + 3]);                                           //(j+5+i+3)>> 5 is NO. of a,l,t,a,p >> i is size of id >> 3 is the size of the separator
-          EEPROM.commit();
-          Serial.print(char(EEPROM.read(81 + j)));
-        }
-        EEPROM.write(apidrom, i);                                                                        //store AP ssid size
-        EEPROM.write(appwrom, j);                                                                        //store AP pw size
-        EEPROM.write(apORst, '0');                                                                       //store that it's in AP mode
-        EEPROM.write(newap, '1');                                                                        //store that there're new AP credentials
-        EEPROM.commit();
-        delay(100);
-        ESP.restart();
-      }
-      else if (incomingPacket[3] == 's' && incomingPacket[4] == 't') {                        //changing staion ssid and pw
-        Udp.beginPacket(Udp.remoteIP(), 4210);                                                  // send back a reply, to the IP address and port we got the packet from
-        Udp.write("Setting new Station...");
-        Udp.endPacket();
-        delay(100);
-        packetSize -= 5;
-        int i = 0, j = 0;
-        for (i = 0; i < packetSize; i++) {                                                               //store and serial print the station ssid
-          if (incomingPacket[i + 5] == '&' && incomingPacket[i + 6] == '&' && incomingPacket[i + 7] == '&') break; //if station ssid is stored the break to store the password
-          EEPROM.write(21 + i, incomingPacket[i + 5]);                                                   //(i+5)>> 5 is the NO. of a,l,t,a,p
-          EEPROM.commit();
-          Serial.print(char(EEPROM.read(21 + i)));
-        }
-        for (j = 0; j < packetSize - i - 3; j++) {                                                       //store and serial print the station password
-          EEPROM.write(41 + j, incomingPacket[j + 5 + i + 3]);                                           //(j+5+i+3)>> 5 is NO. of a,l,t,a,p >> i is size of id >> 3 is the size of the separator
-          EEPROM.commit();
-          Serial.print(char(EEPROM.read(41 + j)));
-        }
-        EEPROM.write(stidrom, i);                                                                        //store AP ssid size
-        EEPROM.write(stpwrom, j);                                                                        //store AP pw size
-        EEPROM.write(apORst, '1');                                                                       //store that it's in station mode
-        EEPROM.commit();                                                                                 //svae eeprom changes
-        ESP.restart();                                                                                   //reboot the esp
-      }
-    }
-
-    if (incomingPacket[0] == 'i' && incomingPacket[1] == 'p') {                           //changing IP address
-      Serial.println("new ip address:");                                                 //print to the serial monitor
-      Udp.beginPacket(Udp.remoteIP(), 4210);                                             //start a socket with the remote controlling device
-      Udp.write("Setting new IP Address... ");                                           //reply and confirm the packets are received
-      Udp.endPacket();                                                                   //close the socket
-      delay(100);
-      EEPROM.write(122, packetSize - 2);                                                  //store the new IP number of packet to eeprom
-      for (int i = 0; i < packetSize - 2; i++) {
-        EEPROM.write(123 + i, incomingPacket[2 + i]);                                        //store the new IP address to eeprom
-      }
-      EEPROM.write(121, '1');                                                                     //there is a new IP address stored
-      EEPROM.commit();                                                                            //save eeprom changes
-      ESP.restart();                                                                            //reboot the esp
-    }
-    else if (strcmp(incomingPacket, "reboot") == 0) { //reboot the device
+    if (strcmp(incomingPacket, "reboot") == 0) { //reboot the device
       Udp.beginPacket(Udp.remoteIP(), 4210);         //start a socket with the remote controlling device
       Udp.write("Attempting to reboot... ");         //reply and confirm the packets are received
       Udp.endPacket();                               //close the socket
-      delay(100);
-      ESP.restart();                                 //reboot the esp
-    }
-    else if (strcmp(incomingPacket, "delete") == 0) {//reset to default settings
-      Udp.beginPacket(Udp.remoteIP(), 4210);         //start a socket with the remote controlling device
-      Udp.write("Back to defaults... ");             //reply and confirm the packets are received
-      Udp.endPacket();                               //close the socket
-      delay(100);
-      EEPROM.write(apORst, '0');                     //set access point after reboot
-      EEPROM.write(newap, '0');                      //set the default ssid and password
-      EEPROM.write(121, '0');                        //set the default IP address
-      EEPROM.commit();                               //save eeprom changes
       delay(100);
       ESP.restart();                                 //reboot the esp
     }
@@ -503,76 +305,37 @@ void loop() {
       delay(300);
       digitalWrite(13, LOW);
     }
-  }
-  if (incomingPacket[0] == '7') { //D7
-    Serial.println("D7");
-    digitalWrite(5, !digitalRead(5));
-    if (digitalRead(5) == LOW) {
-      EEPROM.write(add1, 0);
-    }
-    else if (digitalRead(5) == HIGH) {
-      EEPROM.write(add1, 1);
-    }
-    delay(100);
-    digitalWrite(13, HIGH);
-    delay(300);
-    digitalWrite(13, LOW);
-  }
-} if (incomingPacket[0] == '8') { //D8
-  Serial.println("D8");
-  digitalWrite(10, !digitalRead(10));
-  if (digitalRead(10) == LOW) {
-    EEPROM.write(add2, 0);
-  }
-  else if (digitalRead(10) == HIGH) {
-    EEPROM.write(add2, 1);
-  }
-  delay(100);
-  digitalWrite(13, HIGH);
-  delay(300);
-  digitalWrite(13, LOW);
-}
 
-//if can't find selected wifi,set default ssid
-if (apCount == 60) {
-  apCount = 0;
-  notConnTime = 0;
-  int n = WiFi.scanNetworks();
-  Serial.println(n);
-  stssid = "";
-  for (int i = 0; i < int(EEPROM.read(stidrom)); i++) {
-    stssid += char(EEPROM.read(21 + i));
-  }
-  for (int i = 0; i < n; i++) {
-    Serial.println(WiFi.SSID(i));
-    if (WiFi.SSID(i) == stssid && EEPROM.read(apORst) == '1') {
-      conn_not = 1;
-      notConn_ap = false;
-      Serial.println(); Serial.print("connecting to "); Serial.println(stssid);
-      WiFi.mode(WIFI_STA);                                         //begin station mode
-      WiFi.config(ip, gateway, subnet);
-      WiFi.begin(stssid, stpassword);
-      while (WiFi.status() != WL_CONNECTED) {
-        Serial.println(".");
-        digitalWrite(13, HIGH);
-        delay(100);
-        digitalWrite(13, LOW);
-        delay(400);
-        count++;
-        if (count >= 120) {
-          digitalWrite(13, HIGH);
-          delay(500);
-          digitalWrite(13, LOW);
-          notConn_ap = true;
-          WiFi.mode(WIFI_AP);
-          WiFi.config(ip, gateway, subnet);
-          Serial.print(WiFi.softAP(ssid, password, 1, 0, 5) ? "AP Ready.. station not " : "AP Failed!.. station not");
-          count = 0;
-        }
+    if (incomingPacket[0] == '7') { //D7
+      Serial.println("D7");
+      digitalWrite(5, !digitalRead(5));
+      if (digitalRead(5) == LOW) {
+        EEPROM.write(add1, 0);
       }
+      else if (digitalRead(5) == HIGH) {
+        EEPROM.write(add1, 1);
+      }
+      delay(100);
+      digitalWrite(13, HIGH);
+      delay(300);
+      digitalWrite(13, LOW);
     }
-  }
-}
 
-EEPROM.commit();
+    if (incomingPacket[0] == '8') { //D8
+      Serial.println("D8");
+      digitalWrite(10, !digitalRead(10));
+      if (digitalRead(10) == LOW) {
+        EEPROM.write(add2, 0);
+      }
+      else if (digitalRead(10) == HIGH) {
+        EEPROM.write(add2, 1);
+      }
+      delay(100);
+      digitalWrite(13, HIGH);
+      delay(300);
+      digitalWrite(13, LOW);
+    }
+
+    EEPROM.commit();
+  }
 }
