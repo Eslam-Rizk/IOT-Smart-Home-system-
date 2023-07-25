@@ -31,22 +31,64 @@ This is a smart solution to control home appliances through two options :
 
 Here is the process of making the PCB :
 
-![](https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/Smart%20Home/board%20making%201.png)
+<img src="https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/Smart%20Home/board%20making%201.png" width=300>
 
 and here is the final look:
 
-![](https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/Smart%20Home/board%20making%202.png)
+<img src="https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/Smart%20Home/board%20making%202.png" width=300>
 
 here is a 1-channel mini version of the device :
 
-![](https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/Smart%20Home/1ch%20board%201.png)
-![](https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/Smart%20Home/1ch%20board%202.png)
+<img src="https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/Smart%20Home/1ch%20board%201.png" width=300>
+<img src="https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/Smart%20Home/1ch%20board%202.png" width=300>
 
 # New version !!!
 This is a newer version that requires less wiring which makes the installation process faster and easier.
-![](https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/Smart%20Home/board%20version2.png)
+<img src="https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/Smart%20Home/board%20version2.png" width=300>
 
 # User Interface
-There are 2 options to control the smart home device:
-* Through a **web server** hosted by the esp8266 IP address as shown below:
+  There are 2 options to control the smart home device:
+* First Through a **web server** hosted by the esp8266 IP address as shown below:
 <img src="https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/Smart%20Home/20230725_214500.jpg" width=300>
+
+* The other option is a **Flutter**-based mobile App that controls the devices over **UDP/IP**.
+# Mobile App
+This app displays location-based weather forcasts and time along with 8 custom-designed buttons to control the projects 8 devices.The App can be edited to add more buttons to control more devices.The App is designed on Android Studio **Flutter** project using **Dart** language.The App UI is shown below:
+
+<img src="https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/SmartphoneApp/bbbb/Screenshot_20230725_162644.png" width=300>
+
+# Code
+* After creating a new flutter project i edited the **dependencies** in **pubsec.yaml** file to add the libraries i need to import as shown:
+  
+  ```
+  dependencies:
+  flutter:
+    sdk: flutter
+  udp: ^3.0.3
+  get_ip: ^0.4.0
+  path_provider: ^1.6.14
+  http: ^0.12.2
+  intl: ^0.15.8
+  flutter_icons: ^1.0.0+1
+  weather: ^1.2.3
+  ```
+
+* Then created two dart files insde **lib/pages** folder, [design.dart](https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/SmartphoneApp/bbbb/lib/pages/design.dart) to custom-design cool buttons and [designTest.dart](https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/SmartphoneApp/bbbb/lib/pages/designText.dart) to cutom-design buttons fonts.
+* And here is the main [code](https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/SmartphoneApp/bbbb/lib/main.dart)
+* The whole project can be found [here](https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/tree/main/SmartphoneApp/bbbb).
+# Notes
+* Change IP address written as "xx.xx.xx.xx" in lines 38, 82 and 84 with your esp8266 IP address as shown:
+  
+  ```dart
+  String destination = 'xx.xx.xx.xx';
+  ```
+* Change the **location code** and **city name** in line 39 with yours to get precise weather forcast as shown:
+
+  ```dart
+  String roomName, key = 'YourLocationKey', city = 'YourCityName';
+  ```
+* Change devices names D1,D2,..etc as desired.
+  
+
+
+
