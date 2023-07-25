@@ -43,6 +43,10 @@ here is a 1-channel mini version of the device :
 ![](https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/Smart%20Home/1ch%20board%202.png)
 
 # New version !!!
-Here is a little teaser, be advised for the newer version:
+This is a newer version that requires less wiring which makes the installation process faster and easier.
 ![](https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/Smart%20Home/board%20version2.png)
 
+# User Interface
+There are 2 options to control the smart home device:
+* Through a **web server** hosted by the esp8266 IP address as shown below:
+<img src="https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/Smart%20Home/20230725_214500.jpg" width=300>
