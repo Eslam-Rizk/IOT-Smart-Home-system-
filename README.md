@@ -73,7 +73,7 @@ This app displays location-based weather forcasts and time along with 8 custom-d
   weather: ^1.2.3
   ```
 
-* Then created two dart files insde **lib/pages** folder, [design.dart](https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/SmartphoneApp/bbbb/lib/pages/design.dart) to custom-design cool buttons and [designTest.dart](https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/SmartphoneApp/bbbb/lib/pages/designText.dart) to cutom-design buttons fonts.
+* Then created two dart files inside **lib/pages** folder, [design.dart](https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/SmartphoneApp/bbbb/lib/pages/design.dart) to custom-design cool buttons and [designTest.dart](https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/SmartphoneApp/bbbb/lib/pages/designText.dart) to cutom-design buttons fonts.
 * And here is the main [code](https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/blob/main/SmartphoneApp/bbbb/lib/main.dart)
 * The whole project can be found [here](https://github.com/Eslam-Rizk/IOT-Smart-Home-system-/tree/main/SmartphoneApp/bbbb).
 # Notes
